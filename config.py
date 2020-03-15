@@ -1,3 +1,3 @@
-LOGIN_TOKEN = "sync"
-
 AUTH_KEY = "hello"
+
+SUBMISSION_DIR = "submissions"

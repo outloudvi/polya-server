@@ -6,12 +6,14 @@ from argon2.exceptions import VerifyMismatchError
 import config
 import uuid
 import json
+import os
 from collections import defaultdict
 
 ph = PasswordHasher()
 
 DB = {
-    "sessions": []
+    "sessions": [],
+    "grading_students": {}
 }
 
 
@@ -25,6 +27,15 @@ def loaddata():
     client_config = json.load(open("client_config.json"))
     DB = db
     DB["client_config"] = client_config
+    DB["grading_students"] = readSubmissions(config.SUBMISSION_DIR)
+    print("Searching dir {}, {} submissions found.".format(
+        config.SUBMISSION_DIR, len(DB["grading_students"])))
+
+
+def readSubmissions(direc):
+    for (dirpath, dirnames, _) in os.walk(direc):
+        if dirpath == direc:
+            return dirnames
 
 
 class PublicRes:
