@@ -173,7 +173,6 @@ class NextRes(PublicRes):
             }
             return
         resp.media = {
-            "failure": "",
             "student": student.__dict__
         }
         DB["grading_students"][student.student_id] = True
