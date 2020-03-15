@@ -85,6 +85,15 @@ class RevokeRes(PublicRes):
             print("Revoked", uuidid)
             DB["sessions"].remove(uuidid)
 
+# ---- /config ----
+@falcon.before(Authorized)
+class ConfigRes(PublicRes):
+    def on_get(self, req, resp):
+        resp.media = {
+            "config": DB["client_config"]
+        }
+
+    on_post = on_get
 
 # --- / ----
 @falcon.before(Authorized)
@@ -118,5 +127,6 @@ signal(SIGINT, SigintHandler)
 api = falcon.API()
 api.add_route("/register", AuthRes())
 api.add_route("/revoke", RevokeRes())
+api.add_route("/config", ConfigRes())
 api.add_route("/image.tar", ImageRes())
 api.add_route("/", InfoRes())
