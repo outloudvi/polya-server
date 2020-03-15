@@ -216,7 +216,7 @@ class StudentRes(PublicRes):
         elif action == "info":
             self.return_info(student, resp)
         else:
-            resp.status = falcon.HTTP_BAD_GATEWAY
+            resp.status = falcon.HTTP_BAD_REQUEST
 
     @staticmethod
     def return_tar(student, resp):
