@@ -68,10 +68,16 @@ def readSubmissions(direc):
             return dirnames
 
 
-def get_tar_result(file, name):
+def get_tar_result(path):
     f = tempfile.NamedTemporaryFile()
     tar = tarfile.open(f.name, "w")
-    tar.add(file, name)
+    if os.path.isfile(path):
+        # For regular file, just add it
+        tar.add(path)
+    elif os.path.isdir(path):
+        # For directory, add everything inside
+        for item in os.listdir(path):
+            tar.add(os.path.join(path, item))
     tar.close()
     return f
 
@@ -235,8 +241,7 @@ class StudentRes(PublicRes):
     @staticmethod
     def return_tar(student, resp):
         resp.stream = get_tar_result(os.path.join(
-            config.SUBMISSION_DIR, student.student_id),
-            student.student_id)
+            config.SUBMISSION_DIR, student.student_id))
         resp.content_type = "application/x-tar"
         lockStudent(student.student_id)
         t = Timer(config.MUTEX_TIMEOUT,
