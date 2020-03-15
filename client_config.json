@@ -64,5 +64,8 @@
     "with_profile": null
   },
   "notification": "the project may invoke X11",
-  "max_grade": 100
+  "max_grade": 100,
+  "stdin": null,
+  "capture_stdout": true,
+  "capture_stderr": true
 }
