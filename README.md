@@ -3,5 +3,5 @@
 Server side for Project Polya.
 
 ```
-gunicorn -w 1 polyaserver.main:api --reload
+gunicorn -w 1 polyaserver:api --reload
 ```
