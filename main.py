@@ -8,6 +8,10 @@ ph = PasswordHasher()
 
 AUTHORIZED_SESSIONS = []
 
+class PublicRes:
+    def __init__(self):
+        self.return_immediately = False
+
 
 def Authorized(req, resp, resource, params):
     if not valid_login(req):
@@ -25,7 +29,7 @@ def valid_login(req):
 
 
 # ---- /register ----
-class AuthRes:
+class AuthRes(PublicRes):
     def on_get(self, req, resp):
         if req.auth is None:
             resp.status = falcon.HTTP_BAD_REQUEST
@@ -49,7 +53,7 @@ class AuthRes:
 
 # ---- /revoke ----
 @falcon.before(Authorized)
-class RevokeRes:
+class RevokeRes(PublicRes):
     def on_delete(self, req, resp):
         hash = req.auth.split(" ")
         if len(hash) != 2 or hash[0] != "Bearer":
@@ -63,11 +67,17 @@ class RevokeRes:
 
 # --- / ----
 @falcon.before(Authorized)
-class InfoRes:
+class InfoRes(PublicRes):
     def on_post(self, req, resp):
-        if resp.return_directly:
-            return
         resp.media = {"c": "4"}
+
+    on_get = on_post
+
+# --- /image.tar ----
+@falcon.before(Authorized)
+class ImageRes(PublicRes):
+    def on_post(self, req, resp):
+        resp.stream = open("./image.tar")
 
     on_get = on_post
 
@@ -75,4 +85,5 @@ class InfoRes:
 api = falcon.API()
 api.add_route("/register", AuthRes())
 api.add_route("/revoke", RevokeRes())
+api.add_route("/image.tar", ImageRes())
 api.add_route("/", InfoRes())
