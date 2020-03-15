@@ -180,6 +180,14 @@ class NextRes(PublicRes):
 
     on_post = on_get
 
+# ---- /students ----
+@falcon.before(Authorized)
+class StudentListRes(PublicRes):
+    def on_get(self, req, resp,):
+        resp.media = {
+            "students": list(DB["grading_students"].keys())
+        }
+
 # ---- /student/{id} ----
 @falcon.before(Authorized)
 class StudentRes(PublicRes):
@@ -231,5 +239,6 @@ api.add_route("/revoke", RevokeRes())
 api.add_route("/config", ConfigRes())
 api.add_route("/image.tar", ImageRes())
 api.add_route("/next", NextRes())
+api.add_route("/students", StudentListRes())
 api.add_route("/student/{id}/{action}", StudentRes())
 api.add_route("/", InfoRes())
