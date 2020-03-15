@@ -11,12 +11,17 @@ import yaml
 import tarfile
 import tempfile
 from collections import defaultdict
+from threading import Timer
 
 ph = PasswordHasher()
 
 DB = {
     "sessions": [],
     "grading_students": {}
+}
+
+TEMPDB = {
+    "lockdowns": []
 }
 
 
@@ -48,6 +53,7 @@ def loaddata():
     for _, v in enumerate(db):
         DB[v] = db[v]
     DB["client_config"] = client_config
+
 
 def readdir():
     for student_id in readSubmissions(config.SUBMISSION_DIR):
@@ -93,9 +99,17 @@ def valid_login(req):
 
 def read_next_ungraded_student():
     for _, id in enumerate(DB["grading_students"]):
-        if DB["grading_students"][id] == False:
+        if DB["grading_students"][id] == False and (id not in TEMPDB["lockdowns"]):
             return Student(id)
     return None
+
+
+def unlockStudent(sid):
+    TEMPDB["lockdowns"].remove(sid)
+
+
+def lockStudent(sid):
+    TEMPDB["lockdowns"].append(sid)
 
 
 # ---- /register ----
@@ -224,11 +238,16 @@ class StudentRes(PublicRes):
             config.SUBMISSION_DIR, student.student_id),
             student.student_id)
         resp.content_type = "application/x-tar"
+        lockStudent(student.student_id)
+        t = Timer(config.MUTEX_TIMEOUT,
+                  lambda: unlockStudent(student.student_id))
+        t.start()
 
     @staticmethod
     def return_info(student: Student, resp):
         retn = student.__dict__
         retn["graded"] = DB["grading_students"][student.student_id]
+        retn["locked"] = student.student_id in TEMPDB["lockdowns"]
         resp.media = retn
 
     on_post = on_get
