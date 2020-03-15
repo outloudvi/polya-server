@@ -15,14 +15,16 @@ DB = {
 }
 
 
-def save_to_db():
+def savedata():
     json.dump(DB, open("db.json", "w"))
 
 
-def read_from_db():
+def loaddata():
     global DB
     db = json.load(open("db.json"))
+    client_config = json.load(open("client_config.json"))
     DB = db
+    DB["client_config"] = client_config
 
 
 class PublicRes:
@@ -66,7 +68,8 @@ class AuthRes(PublicRes):
         DB["sessions"].append(uuidid)
         print("Authenticated:", uuidid)
         resp.media = {
-            "token": uuidid
+            "token": uuidid,
+            "config": DB["client_config"]
         }
 
 # ---- /revoke ----
@@ -103,12 +106,13 @@ class ImageRes(PublicRes):
 
 def SigintHandler(signal_received, frame):
     print("Saving data to db...")
-    save_to_db()
+    savedata()
 
 
 try:
-    read_from_db()
+    loaddata()
 except Exception:
+    print("Data not loaded. Starting clean.")
     pass
 signal(SIGINT, SigintHandler)
 api = falcon.API()

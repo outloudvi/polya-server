@@ -1,0 +1,68 @@
+{
+  "systemd_nspawn": {
+    "pid2": true,
+    "env": [
+      {
+        "name": "TEXT",
+        "value": "123"
+      }
+    ],
+    "work_path": "/data",
+    "syscall": [
+      {
+        "name": "mmap",
+        "permit": true
+      }
+    ],
+    "capacity": [],
+    "capacity_drop": [],
+    "no_new_privileges": false,
+    "no_network": false,
+    "limit": null,
+    "extra_bind": [],
+    "extra_bind_ro": [
+      {
+        "source": "testinput.txt",
+        "target": "/tmp/testinput.txt"
+      }
+    ],
+    "extra_overlay": [],
+    "extra_overlay_ro": []
+  },
+  "firejail": {
+    "timeout": {
+      "hour": 0,
+      "minute": 0,
+      "second": 30
+    },
+    "syscall": [],
+    "shell": "/bin/bash",
+    "nice": null,
+    "function": {
+      "nou2f": false,
+      "novideo": false,
+      "no3d": false,
+      "noautopulse": false,
+      "nogroups": false,
+      "nonewprivs": false,
+      "nodvd": false,
+      "nodbus": false,
+      "nonet": false
+    },
+    "mac": null,
+    "nodefault": false,
+    "limit": {
+      "mem_limit": 128,
+      "nofile_limit": null,
+      "filesize_limit": null,
+      "process_limit": null,
+      "sigpending_limit": null,
+      "cpu_nums": null
+    },
+    "capacity": [],
+    "capacity_drop": [],
+    "with_profile": null
+  },
+  "notification": "the project may invoke X11",
+  "max_grade": 100
+}
