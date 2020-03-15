@@ -1,0 +1,3 @@
+build_shell: /bin/bash ./build.sh
+run_shell: /bin/bash ./run.sh
+notification: It's a test who cares
