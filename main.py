@@ -176,7 +176,6 @@ class NextRes(PublicRes):
         resp.media = {
             "student": student.__dict__
         }
-        DB["grading_students"][student.student_id] = True
 
     on_post = on_get
 
@@ -191,6 +190,19 @@ class StudentListRes(PublicRes):
 # ---- /student/{id} ----
 @falcon.before(Authorized)
 class StudentRes(PublicRes):
+    def on_put(self, req, resp, id, action):
+        student: Student = Student(id)
+        if not student.valid:
+            resp.status = falcon.HTTP_NOT_FOUND
+            resp.media = {
+                "failure": "Student not found"
+            }
+            return
+        if action == "ack":
+            DB["grading_students"][student.student_id] = True
+        else:
+            resp.status = falcon.HTTP_BAD_REQUEST
+
     def on_get(self, req, resp, id, action):
         student: Student = Student(id)
         if not student.valid:
