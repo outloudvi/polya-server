@@ -45,7 +45,8 @@ def loaddata():
     global DB
     db = json.load(open("db.json"))
     client_config = json.load(open("client_config.json"))
-    DB = db
+    for _, v in enumerate(db):
+        DB[v] = db[v]
     DB["client_config"] = client_config
     for student_id in readSubmissions(config.SUBMISSION_DIR):
         DB["grading_students"][student_id] = False
