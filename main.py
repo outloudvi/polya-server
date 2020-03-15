@@ -68,8 +68,7 @@ class AuthRes(PublicRes):
         DB["sessions"].append(uuidid)
         print("Authenticated:", uuidid)
         resp.media = {
-            "token": uuidid,
-            "config": DB["client_config"]
+            "token": uuidid
         }
 
 # ---- /revoke ----
