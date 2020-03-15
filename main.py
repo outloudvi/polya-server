@@ -67,11 +67,12 @@ def get_tar_result(path):
     tar = tarfile.open(f.name, "w")
     if os.path.isfile(path):
         # For regular file, just add it
-        tar.add(path)
+        paths = path.split("/")
+        tar.add(path, paths[-1])
     elif os.path.isdir(path):
         # For directory, add everything inside
         for item in os.listdir(path):
-            tar.add(os.path.join(path, item))
+            tar.add(os.path.join(path, item), item)
     tar.close()
     return f
 
