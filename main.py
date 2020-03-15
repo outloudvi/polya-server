@@ -94,7 +94,6 @@ def valid_login(req):
 def read_next_ungraded_student():
     for _, id in enumerate(DB["grading_students"]):
         if DB["grading_students"][id] == False:
-            print("fs")
             return Student(id)
     return None
 
