@@ -153,8 +153,12 @@ class RevokeRes(PublicRes):
 @falcon.before(Authorized)
 class ConfigRes(PublicRes):
     def on_get(self, req, resp):
+        if "client_config" in DB:
+            conf = DB["client_config"]
+        else:
+            conf = {}
         resp.media = {
-            "config": DB["client_config"]
+            "config": conf
         }
 
     on_post = on_get
