@@ -48,6 +48,8 @@ def loaddata():
     for _, v in enumerate(db):
         DB[v] = db[v]
     DB["client_config"] = client_config
+
+def readdir():
     for student_id in readSubmissions(config.SUBMISSION_DIR):
         DB["grading_students"][student_id] = False
     print("Searching dir {}, {} submissions found.".format(
@@ -231,6 +233,7 @@ try:
 except Exception:
     print("Data not loaded. Starting clean.")
     pass
+readdir()
 signal(SIGINT, SigintHandler)
 api = falcon.API()
 api.add_route("/register", AuthRes())
