@@ -56,16 +56,10 @@ def loaddata():
 
 
 def readdir():
-    for student_id in readSubmissions(config.SUBMISSION_DIR):
+    for student_id in os.listdir(config.SUBMISSION_DIR):
         DB["grading_students"][student_id] = False
     print("Searching dir {}, {} submissions found.".format(
         config.SUBMISSION_DIR, len(DB["grading_students"])))
-
-
-def readSubmissions(direc):
-    for (dirpath, dirnames, _) in os.walk(direc):
-        if dirpath == direc:
-            return dirnames
 
 
 def get_tar_result(path):
