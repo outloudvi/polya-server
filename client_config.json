@@ -52,7 +52,7 @@
     "mac": null,
     "nodefault": false,
     "limit": {
-      "mem_limit": 128,
+      "mem_limit": 134217728,
       "nofile_limit": null,
       "filesize_limit": null,
       "process_limit": null,
