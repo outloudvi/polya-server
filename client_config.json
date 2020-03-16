@@ -36,7 +36,7 @@
       "second": 30
     },
     "syscall": [],
-    "shell": "/bin/bash",
+    "shell": "/usr/bin/bash",
     "nice": null,
     "function": {
       "nou2f": false,
