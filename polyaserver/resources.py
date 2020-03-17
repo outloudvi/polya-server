@@ -24,6 +24,9 @@ class PublicRes:
 class AuthRes(PublicRes):
     def on_get(self, req, resp):
         if req.auth is None:
+            resp.media = {
+                "failure": "Register token not found"
+            }
             resp.status = falcon.HTTP_BAD_REQUEST
             return
         hash = req.auth.split(" ")
@@ -49,6 +52,9 @@ class RevokeRes(PublicRes):
     def on_delete(self, req, resp):
         hash = req.auth.split(" ")
         if len(hash) != 2 or hash[0] != "Bearer":
+            resp.media = {
+                "failure": "Bad bearer token format"
+            }
             resp.status = falcon.HTTP_BAD_REQUEST
             return
         uuidid = hash[1]
@@ -129,12 +135,18 @@ class StudentRes(PublicRes):
         elif action == "grades":
             data = readJSON(req)
             if data is None:
+                resp.media = {
+                    "failure": "Bad JSON format"
+                }
                 resp.status = falcon.HTTP_BAD_REQUEST
                 return
             DB["students"][student.student_id] = data
             DB["grading_students"][student.student_id] = True
             resp.media = {}
         else:
+            resp.media = {
+                "failure": "Unrecognized action"
+            }
             resp.status = falcon.HTTP_BAD_REQUEST
 
     def on_get(self, req, resp, id, action):
@@ -156,6 +168,9 @@ class StudentRes(PublicRes):
             resp.media = DB["students"][student.student_id]
 
         else:
+            resp.media = {
+                "failure": "Unrecognized action"
+            }
             resp.status = falcon.HTTP_BAD_REQUEST
 
     @staticmethod
