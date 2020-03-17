@@ -17,7 +17,7 @@ def valid_login(req):
 
 def read_next_ungraded_student():
     for _, id in enumerate(DB["grading_students"]):
-        if DB["grading_students"][id] == False and (id not in TEMPDB["lockdowns"]):
+        if DB["grading_students"][id]["finished"] == False and DB["grading_students"][id]["skipped"] == False and (id not in TEMPDB["lockdowns"]):
             return Student(id)
     return None
 
@@ -39,7 +39,10 @@ def get_tar_result(path):
 
 def readdir():
     for student_id in os.listdir(config.SUBMISSION_DIR):
-        DB["grading_students"][student_id] = False
+        DB["grading_students"][student_id] = {
+            "skipped": False,
+            "finished": False
+        }
     print("Searching dir {}, {} submissions found.".format(
         config.SUBMISSION_DIR, len(DB["grading_students"])))
 
