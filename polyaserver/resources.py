@@ -149,6 +149,12 @@ class StudentRes(PublicRes):
             self.return_tar(student, resp)
         elif action == "info":
             self.return_info(student, resp)
+        elif action == "grades":
+            if student.student_id not in DB["students"]:
+                resp.staticdb = falcon.HTTP_NOT_FOUND
+                return
+            resp.media = DB["students"][student.student_id]
+
         else:
             resp.status = falcon.HTTP_BAD_REQUEST
 
