@@ -1,5 +1,6 @@
 DB = {
     "sessions": [],
+    "students": {},
     "grading_students": {}
 }
 

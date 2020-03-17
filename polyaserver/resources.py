@@ -3,7 +3,7 @@ from polyaserver.staticdb import DB, TEMPDB
 
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
-from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent
+from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -126,6 +126,14 @@ class StudentRes(PublicRes):
             return
         if action == "ack":
             DB["grading_students"][student.student_id] = True
+        elif action == "grades":
+            data = readJSON(req)
+            if data is None:
+                resp.status = falcon.HTTP_BAD_REQUEST
+                return
+            DB["students"][student.student_id] = data
+            DB["grading_students"][student.student_id] = True
+            resp.media = {}
         else:
             resp.status = falcon.HTTP_BAD_REQUEST
 

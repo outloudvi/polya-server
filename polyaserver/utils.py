@@ -4,6 +4,7 @@ from polyaserver.classes import Student
 from tempfile import NamedTemporaryFile
 import tarfile
 import os
+import json
 
 
 def valid_login(req):
@@ -49,3 +50,12 @@ def unlockStudent(sid):
 
 def lockStudent(sid):
     TEMPDB["lockdowns"].append(sid)
+
+def readJSON(req):
+    data = req.stream.read(req.content_length or 0)
+    try:
+        ret = json.loads(data)
+    except Exception as e:
+        print(e)
+        return None
+    return ret
