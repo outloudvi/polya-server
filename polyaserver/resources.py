@@ -130,7 +130,7 @@ class StudentRes(PublicRes):
             }
             return
         if action == "ack":
-            DB["grading_students"][student.student_id] = True
+            DB["grading_students"][student.student_id]["finished"] = True
         elif action == "grades":
             data = readJSON(req)
             if data is None:
@@ -140,7 +140,31 @@ class StudentRes(PublicRes):
                 resp.status = falcon.HTTP_BAD_REQUEST
                 return
             DB["students"][student.student_id] = data
-            DB["grading_students"][student.student_id] = True
+            DB["grading_students"][student.student_id]["finished"] = True
+            resp.media = {}
+        elif action == "skip":
+            DB["grading_students"][student.student_id]["skipped"] = True
+            resp.media = {}
+        else:
+            resp.media = {
+                "failure": "Unrecognized action"
+            }
+            resp.status = falcon.HTTP_BAD_REQUEST
+
+    def on_delete(self, req, resp, id, action):
+        student: Student = Student(id)
+        if not student.valid:
+            resp.status = falcon.HTTP_NOT_FOUND
+            resp.media = {
+                "failure": "Student not found"
+            }
+            return
+        if action == "grades":
+            DB["students"][student.student_id] = {}
+            DB["grading_students"][student.student_id]["finished"] = False
+            resp.media = {}
+        elif action == "skip":
+            DB["grading_students"][student.student_id]["skipped"] = False
             resp.media = {}
         else:
             resp.media = {
