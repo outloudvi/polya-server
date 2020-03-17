@@ -101,8 +101,7 @@ class NextRes(PublicRes):
         if student == None:
             resp.status = falcon.HTTP_NOT_FOUND
             resp.media = {
-                "failure": "No ungraded students",
-                "student": {}
+                "failure": "No ungraded students"
             }
             return
         resp.media = {
