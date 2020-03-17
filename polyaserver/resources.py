@@ -139,6 +139,12 @@ class StudentRes(PublicRes):
                 }
                 resp.status = falcon.HTTP_BAD_REQUEST
                 return
+            if DB["students"].get(student.student_id):
+                if data.get("override") != True:
+                    resp.media = {
+                        "failure": "Grade already exists. Use override:true to override."
+                    }
+                    resp.status = falcon.HTTP_CONFLICT
             DB["students"][student.student_id] = data
             DB["grading_students"][student.student_id]["finished"] = True
             resp.media = {}
