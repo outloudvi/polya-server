@@ -1,0 +1,3 @@
+build_shell: ./build.sh
+run_shell: ./run.sh
+notification: Malicious stuffs
