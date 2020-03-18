@@ -1,5 +1,6 @@
 import config
 from polyaserver.staticdb import DB, TEMPDB
+from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
@@ -113,10 +114,19 @@ class NextRes(PublicRes):
 # ---- /students ----
 @falcon.before(Authorized)
 class StudentListRes(PublicRes):
-    def on_get(self, req, resp,):
-        resp.media = {
-            "students": list(DB["grading_students"].keys())
-        }
+    def on_get(self, req, resp):
+        if req.get_param_as_bool("detail"):
+            ret = {}
+            for _, id in enumerate(DB["grading_students"]):
+                ret[id] = {}
+                ret[id]["grades"] = DB["students"].get(id, {})
+                ret[id]["status"] = DB["grading_students"].get(
+                    id, DEFAULT_GRADING_STATUS)
+            resp.media = ret
+        else:
+            resp.media = {
+                "students": list(DB["grading_students"].keys())
+            }
 
 # ---- /student/{id} ----
 @falcon.before(Authorized)

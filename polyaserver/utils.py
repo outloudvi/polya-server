@@ -1,4 +1,5 @@
 from polyaserver.staticdb import DB, TEMPDB
+from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 import config
 from polyaserver.classes import Student
 from tempfile import NamedTemporaryFile
@@ -39,10 +40,7 @@ def get_tar_result(path):
 
 def readdir():
     for student_id in os.listdir(config.SUBMISSION_DIR):
-        DB["grading_students"][student_id] = {
-            "skipped": False,
-            "finished": False
-        }
+        DB["grading_students"][student_id] = DEFAULT_GRADING_STATUS
     print("Searching dir {}, {} submissions found.".format(
         config.SUBMISSION_DIR, len(DB["grading_students"])))
 
