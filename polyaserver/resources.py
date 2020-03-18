@@ -120,12 +120,14 @@ class NextRes(PublicRes):
 class StudentListRes(PublicRes):
     def on_get(self, req, resp):
         if req.get_param_as_bool("detail"):
-            ret = {}
+            ret = []
             for _, id in enumerate(DB["grading_students"]):
-                ret[id] = {}
-                ret[id]["grades"] = DB["students"].get(id, {})
-                ret[id]["status"] = DB["grading_students"].get(
+                obj = {}
+                obj["student_id"] = id
+                obj["grades"] = DB["students"].get(id, {})
+                obj["status"] = DB["grading_students"].get(
                     id, DEFAULT_GRADING_STATUS)
+                ret.append(obj)
             resp.media = ret
         else:
             resp.media = {
