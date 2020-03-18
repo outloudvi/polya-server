@@ -128,7 +128,9 @@ class StudentListRes(PublicRes):
                 obj["status"] = DB["grading_students"].get(
                     id, DEFAULT_GRADING_STATUS)
                 ret.append(obj)
-            resp.media = ret
+            resp.media = {
+                "students": ret
+            }
         else:
             resp.media = {
                 "students": list(DB["grading_students"].keys())
