@@ -4,7 +4,7 @@ from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
-from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON
+from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON, get_auth_key
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -62,6 +62,10 @@ class RevokeRes(PublicRes):
         if uuidid in DB["sessions"]:
             print("Revoked", uuidid)
             DB["sessions"].remove(uuidid)
+            for i in TEMPDB["lockdowns"]:
+                if TEMPDB["lockdowns"][i] == uuidid:
+                    del TEMPDB["lockdowns"][i]
+
 
 # ---- /config ----
 @falcon.before(Authorized)
@@ -142,6 +146,13 @@ class StudentRes(PublicRes):
         if action == "ack":
             DB["grading_students"][student.student_id]["finished"] = True
         elif action == "grades":
+            by = get_auth_key(req)
+            if (student.student_id not in TEMPDB["lockdowns"]) or (TEMPDB["lockdowns"][student.student_id] != by):
+                resp.status = falcon.HTTP_FORBIDDEN
+                resp.media = {
+                    "failure": "Object locked by other client" if (TEMPDB["lockdowns"][student.student_id] != by) else "Object not locked, lock first"
+                }
+                return
             data = readJSON(req)
             if data is None:
                 resp.media = {
@@ -157,6 +168,7 @@ class StudentRes(PublicRes):
                     resp.status = falcon.HTTP_CONFLICT
             DB["students"][student.student_id] = data
             DB["grading_students"][student.student_id]["finished"] = True
+            unlockStudent(student.student_id)
             resp.media = {}
         elif action == "skip":
             DB["grading_students"][student.student_id]["skipped"] = True
@@ -197,7 +209,8 @@ class StudentRes(PublicRes):
             }
             return
         if action == "tar":
-            self.return_tar(student, resp)
+            by = get_auth_key(req)
+            self.return_tar(student, resp, by)
         elif action == "info":
             self.return_info(student, resp)
         elif action == "grades":
@@ -213,11 +226,11 @@ class StudentRes(PublicRes):
             resp.status = falcon.HTTP_BAD_REQUEST
 
     @staticmethod
-    def return_tar(student, resp):
+    def return_tar(student, resp, by):
         resp.stream = get_tar_result(os.path.join(
             config.SUBMISSION_DIR, student.student_id))
         resp.content_type = "application/x-tar"
-        lockStudent(student.student_id)
+        lockStudent(student.student_idm, by)
         t = Timer(config.MUTEX_TIMEOUT,
                   lambda: unlockStudent(student.student_id))
         t.start()
@@ -226,7 +239,7 @@ class StudentRes(PublicRes):
     def return_info(student: Student, resp):
         retn = student.__dict__
         retn["graded"] = DB["grading_students"][student.student_id]
-        retn["locked"] = student.student_id in TEMPDB["lockdowns"]
+        retn["locked"] = student.student_id in TEMPDB["lockdowns"].keys()
         resp.media = retn
 
     on_post = on_get

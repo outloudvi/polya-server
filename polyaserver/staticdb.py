@@ -5,5 +5,5 @@ DB = {
 }
 
 TEMPDB = {
-    "lockdowns": []
+    "lockdowns": {}
 }

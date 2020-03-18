@@ -8,6 +8,12 @@ import os
 import json
 
 
+def get_auth_key(req):
+    if not valid_login(req):
+        return ""
+    return req.auth.split(" ")[1:].join(" ")
+
+
 def valid_login(req):
     if req.auth is None:
         return False
@@ -18,7 +24,7 @@ def valid_login(req):
 
 def read_next_ungraded_student():
     for _, id in enumerate(DB["grading_students"]):
-        if DB["grading_students"][id]["finished"] == False and DB["grading_students"][id]["skipped"] == False and (id not in TEMPDB["lockdowns"]):
+        if DB["grading_students"][id]["finished"] == False and DB["grading_students"][id]["skipped"] == False and (id not in TEMPDB["lockdowns"].keys()):
             return Student(id)
     return None
 
@@ -46,11 +52,13 @@ def readdir():
 
 
 def unlockStudent(sid):
-    TEMPDB["lockdowns"].remove(sid)
+    del TEMPDB["lockdowns"][sid]
 
 
-def lockStudent(sid):
-    TEMPDB["lockdowns"].append(sid)
+def lockStudent(sid, uuid):
+    TEMPDB["lockdowns"][sid] = uuid
+    print("Student", sid, "is locked by", uuid)
+
 
 def readJSON(req):
     data = req.stream.read(req.content_length or 0)
