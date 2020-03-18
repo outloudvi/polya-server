@@ -11,7 +11,7 @@ import json
 def get_auth_key(req):
     if not valid_login(req):
         return ""
-    return req.auth.split(" ")[1:].join(" ")
+    return " ".join(req.auth.split(" ")[1:])
 
 
 def valid_login(req):
