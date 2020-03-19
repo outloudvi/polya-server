@@ -52,7 +52,8 @@ def readdir():
 
 
 def unlockStudent(sid):
-    del TEMPDB["lockdowns"][sid]
+    if sid in TEMPDB["lockdowns"]:
+        del TEMPDB["lockdowns"][sid]
 
 
 def lockStudent(sid, uuid):
