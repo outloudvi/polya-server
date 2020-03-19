@@ -154,7 +154,7 @@ class StudentRes(PublicRes):
             if (student.student_id not in TEMPDB["lockdowns"]) or (TEMPDB["lockdowns"][student.student_id] != by):
                 resp.status = falcon.HTTP_FORBIDDEN
                 resp.media = {
-                    "failure": "Object locked by other client" if (TEMPDB["lockdowns"][student.student_id] != by) else "Object not locked, lock first"
+                    "failure": "Object locked by other client" if (TEMPDB["lockdowns"].get(student.student_id) != by) else "Object not locked, lock first"
                 }
                 return
             data = readJSON(req)
