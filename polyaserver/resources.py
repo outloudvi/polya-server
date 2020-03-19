@@ -256,3 +256,12 @@ class SaveRes(PublicRes):
     def on_post(self, req, resp):
         savedata()
         resp.media = {}
+
+# ---- /raw ----
+@falcon.before(Authorized)
+class RawRes(PublicRes):
+    def on_post(self, req, resp, action):
+        if action == "db":
+            resp.media = DB
+        elif action == "tempdb":
+            resp.media = TEMPDB
