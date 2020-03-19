@@ -2,7 +2,7 @@ from signal import signal, SIGINT
 import falcon
 
 from polyaserver.staticdb import DB, TEMPDB
-from polyaserver.resources import AuthRes, RevokeRes, ConfigRes, ImageRes, NextRes, StudentListRes, StudentRes, InfoRes
+from polyaserver.resources import AuthRes, RevokeRes, ConfigRes, ImageRes, NextRes, StudentListRes, StudentRes, InfoRes, SaveRes
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
 from polyaserver.db import savedata, loaddata
@@ -29,4 +29,5 @@ api.add_route("/image.tar", ImageRes())
 api.add_route("/next", NextRes())
 api.add_route("/students", StudentListRes())
 api.add_route("/student/{id}/{action}", StudentRes())
+api.add_route("/save", SaveRes())
 api.add_route("/", InfoRes())

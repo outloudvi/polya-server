@@ -5,6 +5,7 @@ from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
 from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON, get_auth_key
+from polyaserver.db import savedata
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -247,3 +248,11 @@ class StudentRes(PublicRes):
         resp.media = retn
 
     on_post = on_get
+
+
+# ---- /save ----
+@falcon.before(Authorized)
+class SaveRes(PublicRes):
+    def on_post(self, req, resp):
+        savedata()
+        resp.media = {}
