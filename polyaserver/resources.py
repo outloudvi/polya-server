@@ -9,7 +9,6 @@ from polyaserver.db import savedata
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
-from threading import Timer
 import falcon
 import os
 import uuid
@@ -238,8 +237,6 @@ class StudentRes(PublicRes):
         resp.stream = get_tar_result(os.path.join(
             config.SUBMISSION_DIR, student.student_id))
         resp.content_type = "application/x-tar"
-        t = Timer(config.MUTEX_TIMEOUT,
-                  lambda: unlockStudent(student.student_id))
         t.start()
 
     @staticmethod
