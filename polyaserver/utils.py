@@ -46,7 +46,8 @@ def get_tar_result(path):
 
 def readdir():
     for student_id in os.listdir(config.SUBMISSION_DIR):
-        DB["grading_students"][student_id] = DEFAULT_GRADING_STATUS
+        DB["grading_students"][student_id] = {}
+        DB["grading_students"][student_id].update(DEFAULT_GRADING_STATUS)
     print("Searching dir {}, {} submissions found.".format(
         config.SUBMISSION_DIR, len(DB["grading_students"])))
 
