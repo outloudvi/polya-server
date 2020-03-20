@@ -113,6 +113,8 @@ class NextRes(PublicRes):
         resp.media = {
             "student": student.__dict__
         }
+        by = get_auth_key(req)
+        lockStudent(student.student_id, by)
 
     on_post = on_get
 
@@ -236,7 +238,6 @@ class StudentRes(PublicRes):
         resp.stream = get_tar_result(os.path.join(
             config.SUBMISSION_DIR, student.student_id))
         resp.content_type = "application/x-tar"
-        lockStudent(student.student_id, by)
         t = Timer(config.MUTEX_TIMEOUT,
                   lambda: unlockStudent(student.student_id))
         t.start()
