@@ -177,6 +177,7 @@ class StudentRes(PublicRes):
             resp.media = {}
         elif action == "skip":
             DB["grading_students"][student.student_id]["skipped"] = True
+            print("Student", student.student_id, "is skipped")
             resp.media = {}
         else:
             resp.media = {
