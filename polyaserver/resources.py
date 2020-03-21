@@ -145,6 +145,7 @@ class StudentRes(PublicRes):
         student: Student = Student(id)
         if not student.valid:
             resp.status = falcon.HTTP_NOT_FOUND
+            print("404: Bad student", id)
             resp.media = {
                 "failure": "Student not found"
             }
@@ -158,6 +159,8 @@ class StudentRes(PublicRes):
                 resp.media = {
                     "failure": "Object locked by other client" if (TEMPDB["lockdowns"].get(student.student_id) != by) else "Object not locked, lock first"
                 }
+                print("403: Object locked by other client or not:", id, "via",
+                      TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
                 return
             data = readJSON(req)
             if data is None:
