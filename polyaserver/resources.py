@@ -175,7 +175,7 @@ class StudentRes(PublicRes):
                 print("403: Object locked by other client or not:", id, "via",
                       TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
                 return
-            alreadyHaveData = DB["students"][student.student_id]
+            alreadyHaveData = student.student_id in DB["students"]
             if not wantOverride and alreadyHaveData:
                 resp.media = {
                     "failure": "Grade already exists. Use override:true to override."
