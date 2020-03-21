@@ -240,7 +240,6 @@ class StudentRes(PublicRes):
         resp.stream = get_tar_result(os.path.join(
             config.SUBMISSION_DIR, student.student_id))
         resp.content_type = "application/x-tar"
-        t.start()
 
     @staticmethod
     def return_info(student: Student, resp):
