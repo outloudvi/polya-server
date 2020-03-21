@@ -154,13 +154,32 @@ class StudentRes(PublicRes):
             DB["grading_students"][student.student_id]["finished"] = True
         elif action == "grades":
             by = get_auth_key(req)
-            if (student.student_id not in TEMPDB["lockdowns"]) or (TEMPDB["lockdowns"][student.student_id] != by):
+            locked = not (student.student_id not in TEMPDB["lockdowns"])
+            lockedByOthers = locked and (
+                TEMPDB["lockdowns"][student.student_id] != by)
+            wantOverride = data.get("override")
+            alreadyHaveData = DB["students"][student.student_id]
+            if lockedByOthers:
                 resp.status = falcon.HTTP_FORBIDDEN
                 resp.media = {
-                    "failure": "Object locked by other client" if (TEMPDB["lockdowns"].get(student.student_id) != by) else "Object not locked, lock first"
+                    "failure": "Object locked by other client"
                 }
                 print("403: Object locked by other client or not:", id, "via",
                       TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
+                return
+            if not locked and not wantOverride:
+                resp.status = falcon.HTTP_FORBIDDEN
+                resp.media = {
+                    "failure": "Object not locked, lock first"
+                }
+                print("403: Object locked by other client or not:", id, "via",
+                      TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
+                return
+            if not wantOverride and alreadyHaveData:
+                resp.media = {
+                    "failure": "Grade already exists. Use override:true to override."
+                }
+                resp.status = falcon.HTTP_CONFLICT
                 return
             data = readJSON(req)
             if data is None:
@@ -169,12 +188,6 @@ class StudentRes(PublicRes):
                 }
                 resp.status = falcon.HTTP_BAD_REQUEST
                 return
-            if DB["students"].get(student.student_id):
-                if data.get("override") != True:
-                    resp.media = {
-                        "failure": "Grade already exists. Use override:true to override."
-                    }
-                    resp.status = falcon.HTTP_CONFLICT
             DB["students"][student.student_id] = data
             DB["grading_students"][student.student_id]["finished"] = True
             unlockStudent(student.student_id)
