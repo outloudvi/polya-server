@@ -157,8 +157,6 @@ class StudentRes(PublicRes):
             locked = not (student.student_id not in TEMPDB["lockdowns"])
             lockedByOthers = locked and (
                 TEMPDB["lockdowns"][student.student_id] != by)
-            wantOverride = data.get("override")
-            alreadyHaveData = DB["students"][student.student_id]
             if lockedByOthers:
                 resp.status = falcon.HTTP_FORBIDDEN
                 resp.media = {
@@ -167,6 +165,8 @@ class StudentRes(PublicRes):
                 print("403: Object locked by other client or not:", id, "via",
                       TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
                 return
+            data = readJSON(req)
+            wantOverride = data.get("override")
             if not locked and not wantOverride:
                 resp.status = falcon.HTTP_FORBIDDEN
                 resp.media = {
@@ -175,13 +175,13 @@ class StudentRes(PublicRes):
                 print("403: Object locked by other client or not:", id, "via",
                       TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
                 return
+            alreadyHaveData = DB["students"][student.student_id]
             if not wantOverride and alreadyHaveData:
                 resp.media = {
                     "failure": "Grade already exists. Use override:true to override."
                 }
                 resp.status = falcon.HTTP_CONFLICT
                 return
-            data = readJSON(req)
             if data is None:
                 resp.media = {
                     "failure": "Bad JSON format"
