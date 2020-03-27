@@ -85,7 +85,7 @@ class ConfigRes(PublicRes):
 @falcon.before(Authorized)
 class InfoRes(PublicRes):
     def on_post(self, req, resp):
-        resp.media = {"c": "4"}
+        resp.media = {"hello": "world"}
 
     on_get = on_post
 
