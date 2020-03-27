@@ -1,0 +1,534 @@
+openapi: 3.0.0
+info:
+  title: Wintersweet - Project Polya
+  description: |
+    This documentation describes the API endpoints of the server side of Project Polya, a
+    tool helping teachers to grade programming assignments. See more at [our site](https://project-polya.github.io/wintersweet.html).
+  version: 1.0.0
+servers:
+  - url: http://127.1:8080
+    description: Your testing server
+paths:
+  /register:
+    post:
+      summary: Register a token for further use
+      description: Client hash the key to the server, and send the hash to the server as the bearer token.
+      tags:
+      - Session Management
+      security: []
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: Bearer {argon2 hashed key}
+          schema:
+            type: string
+            example: "Bearer $argon2id$v=19$m=102400,t=2,p=8$iL3I3+HuuS1CXwIW8dE03Q$6OUgjV3VIcgsrvQ2xrCicg"
+      responses:
+        '200':
+          description: Successful register
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                example:
+                  token: 1f9cfda8-eb99-42f9-bcc0-6e0d9c3e9c66
+        '400':
+          description: Bad register token
+        '401':
+          description: Unauthorized
+  /:
+    post:
+      summary: Test the validity of token
+      description: Test the validity of token.
+      tags:
+      - Session Management
+      responses:
+        '200':
+          description: Valid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hello:
+                    type: string
+                    format: "world"
+                example:
+                  hello: world
+        '401':
+          description: Invalid token
+  /revoke:
+    delete:
+      summary: Revoke a token
+      description: Revoke a was-registered token.
+      tags:
+      - Session Management
+      responses:
+        '200':
+          description: Token revoked
+        '400':
+          description: Bad login format
+        '401':
+          description: Unauthorized
+  /config:
+    get:
+      summary: Request the client config
+      description: Gives the client config
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Successful register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientConfig'
+        '401':
+          description: Unauthorized
+  /image.sfx:
+    get:
+      summary: Request the base image
+      description: Gives the base image. Compressed over squashfs format.
+      tags:
+      - Config
+      responses:
+        '200':
+          description: Successful register
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+  /next:
+    post:
+      summary: Get the next student to grade
+      description: |
+        Get the basic information of the next student to guide. Note that the
+        student will be locked by this client, and thus unable to be operated
+        on by other clients.
+      tags:
+      - Student
+      responses:
+        '200':
+          description: Got the next student
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student:
+                    $ref: "#/components/schemas/Student"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not ungraded students available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: No ungraded students
+  /students:
+    get:
+      summary: Get the next student to grade
+      description: Get the basic information of the next student to guide.
+      tags:
+      - Student
+      parameters:
+        - name: detail
+          in: query
+          required: false
+          description: Show detailed data
+          schema:
+            type: boolean
+            example: true
+      responses:
+        '200':
+          description: Student data
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      students:
+                        type: object
+                        properties:
+                          student_id:
+                            $ref: "#/components/schemas/Student"
+                  - type: object
+                    properties:
+                      students:
+                        type: array
+                        items:
+                          type: string
+              examples:
+                detailed:
+                  value: 
+                    students:
+                      118010101:
+                        student_id: 118010101
+                        build_shell: build.sh
+                        run_shell: runsh
+                        notification: This is a test
+                        valid: true
+                  summary: Detailed (with student info)
+                non detailed:
+                  value:
+                    students:
+                      - 118010101
+                  summary: Non detailed (student list only)
+                
+        '401':
+          description: Unauthorized
+  /student/{id}/info:
+    get:
+      tags:
+        - Student
+      summary: Get individual student submission
+      description: |
+        Server will return individual student information.
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentInfo"
+              example:
+                student_id: 118010101
+                build_shell: build.sh
+                run_shell: runsh
+                notification: This is a test
+                valid: true
+                graded: false
+                locked: false
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+  /student/{id}/tar:
+    get:
+      tags:
+        - Student
+      summary: Get the student submission as a tar
+      description: |
+        Server will put files together as a tar and give the client.
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The tar archive of student assignment
+          content:
+            application/x-tar:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+  /student/{id}/grades:
+    get:
+      tags:
+        - Student
+      summary: Get the student grades
+      description: |
+        Server will return the grades of student.
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Student grade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudentGrade"
+              example:
+                graded: false
+                comment: null
+                mark: false
+                stdout: null
+                stderr: null
+                build_stdout: null
+                build_stderr: null
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+    put:
+      tags:
+        - Student
+      summary: Update the student grades
+      description: |
+        Server will return the grades of student. Unless the "override" key is
+        present, a client cannot update a student's grades if it hasn't been
+        locked by this client.
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+        - name: override
+          in: query
+          description: Whether to override
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        description: Grades
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentGrade'
+      responses:
+        '200':
+          description: Grade updated
+        '401':
+          description: Unauthorized
+        '403':
+          description: Student not editable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+              examples:
+                locked_by_others:
+                  value: 
+                    failure: Object locked by other client
+                  summary: Object locked by other client
+                not_locked:
+                  value:
+                    failure: Object not locked, lock first
+                  summary: Object not locked, not written, but override is not present
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+        '409':
+          description: Grade need to be overriden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: "Grade already exists. Use override:true to override."
+    delete:
+      tags:
+        - Student
+      summary: Remove the grades of the student
+      description: |
+        Client request server to delete the grades of the student
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Grade updated
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+  /student/{id}/skip:
+    put:
+      tags:
+        - Student
+      summary: Skip the student
+      description: |
+        Client request server to skip the student
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Grade updated
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+    delete:
+      tags:
+        - Student
+      summary: Cancel skipping the student
+      description: |
+        Client request server not to skip the student anymore
+      parameters:
+        - name: id
+          in: path
+          description: Student ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Grade updated
+        '401':
+          description: Unauthorized
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failure:
+                    type: string
+                example:
+                  failure: Student not found
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: uuid
+  schemas:
+    ClientConfig:
+      type: object
+      additionalProperties: true
+    Student:
+      type: object
+      properties:
+        student_id:
+          type: string
+        build_shell:
+          type: string
+        run_shell:
+          type: string
+        notification:
+          type: string
+        valid:
+          type: boolean
+      required:
+        - student_id
+        - build_shell
+        - run_shell
+    StudentInfo:
+      allOf:  
+        - $ref: '#/components/schemas/Student'
+        - type: object
+          properties:
+            graded:
+              type: boolean
+            locked:
+              type: boolean
+      required:
+        - graded
+        - locked
+    StudentGrade:
+      type: object
+      properties:
+        graded:
+          type: boolean
+        comment:
+          type: string
+        mark:
+          type: number
+        stdout:
+          type: string
+        stderr:
+          type: string
+        build_stdout:
+          type: string
+        build_stderr:
+          type: string
+        override:
+          type: boolean
+      required:
+        - mark
+security:
+  - bearerAuth: []
