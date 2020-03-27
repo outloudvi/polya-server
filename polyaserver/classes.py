@@ -1,9 +1,10 @@
 import config
 
+import persistent
 import os
 import yaml
 
-class Student:
+class Student(persistent.Persistent):
     def __init__(self, student_id):
         filename = os.path.join(config.SUBMISSION_DIR, student_id, "init.yml")
         try:

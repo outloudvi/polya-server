@@ -1,26 +1,30 @@
-from signal import signal, SIGINT
+from signal import signal, SIGINT, SIGTERM
 import falcon
+import time
 
-from polyaserver.staticdb import DB, TEMPDB
+from polyaserver.db import DB, TEMPDB
 from polyaserver.resources import AuthRes, RevokeRes, ConfigRes, ImageRes, NextRes, StudentListRes, StudentRes, InfoRes, SaveRes, RawRes, AdminRes
 from polyaserver.classes import Student
 from polyaserver.hooks import Authorized
 from polyaserver.db import savedata, loaddata
 from polyaserver.utils import read_next_ungraded_student, get_tar_result, readdir, unlockStudent, lockStudent
 
+sigTermOn = False
 
-def SigintHandler(signal_received, frame):
+def SigtermHandler(signal_received, frame):
+    global sigTermOn
+    if sigTermOn:
+        return
+    sigTermOn = True
     print("Saving data to db...")
-    savedata()
+    conn = savedata()
+    conn.close()
+    print("Connection closed")
+    exit(0)
 
 
-try:
-    loaddata()
-except Exception:
-    print("Data not loaded. Starting clean.")
-    pass
 readdir()
-signal(SIGINT, SigintHandler)
+signal(SIGTERM, SigtermHandler)
 api = falcon.API()
 api.add_route("/register", AuthRes())
 api.add_route("/revoke", RevokeRes())

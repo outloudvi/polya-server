@@ -146,4 +146,4 @@ static
 /dep
 /dep.pub
 /.vscode
-db.json
+db.fs*

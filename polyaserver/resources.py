@@ -1,5 +1,5 @@
 import config
-from polyaserver.staticdb import DB, TEMPDB
+from polyaserver.db import DB, TEMPDB
 from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 
 from polyaserver.classes import Student
@@ -42,7 +42,9 @@ class AuthRes(PublicRes):
             return
 
         uuidid = str(uuid.uuid4())
-        DB["sessions"].append(uuidid)
+        DB.sessions.append(uuidid)
+        print(DB)
+        print("Sess", DB.sessions)
         print("Authenticated:", uuidid)
         resp.media = {
             "token": uuidid
@@ -60,9 +62,9 @@ class RevokeRes(PublicRes):
             resp.status = falcon.HTTP_BAD_REQUEST
             return
         uuidid = hash[1]
-        if uuidid in DB["sessions"]:
+        if uuidid in DB.sessions:
             print("Revoked", uuidid)
-            DB["sessions"].remove(uuidid)
+            DB.sessions.remove(uuidid)
             for i in TEMPDB["lockdowns"]:
                 if TEMPDB["lockdowns"][i] == uuidid:
                     del TEMPDB["lockdowns"][i]
@@ -73,7 +75,7 @@ class RevokeRes(PublicRes):
 class ConfigRes(PublicRes):
     def on_get(self, req, resp):
         if "client_config" in DB:
-            conf = DB["client_config"]
+            conf = DB.client_config
         else:
             conf = {}
         resp.media = {
@@ -124,11 +126,11 @@ class StudentListRes(PublicRes):
     def on_get(self, req, resp):
         if req.get_param_as_bool("detail"):
             ret = []
-            for _, id in enumerate(DB["grading_students"]):
+            for _, id in enumerate(DB.grading_students):
                 obj = {}
                 obj["student_id"] = id
-                obj["grades"] = DB["students"].get(id, {})
-                obj["status"] = DB["grading_students"].get(
+                obj["grades"] = DB.students.get(id, {})
+                obj["status"] = DB.grading_students.get(
                     id, DEFAULT_GRADING_STATUS)
                 ret.append(obj)
             resp.media = {
@@ -136,7 +138,7 @@ class StudentListRes(PublicRes):
             }
         else:
             resp.media = {
-                "students": list(DB["grading_students"].keys())
+                "students": list(DB.grading_students.keys())
             }
 
 # ---- /student/{id} ----
@@ -152,7 +154,7 @@ class StudentRes(PublicRes):
             }
             return
         if action == "ack":
-            DB["grading_students"][student.student_id]["finished"] = True
+            DB.grading_students[student.student_id]["finished"] = True
         elif action == "grades":
             by = get_auth_key(req)
             locked = not (student.student_id not in TEMPDB["lockdowns"])
@@ -176,7 +178,7 @@ class StudentRes(PublicRes):
                 print("403: Object locked by other client or not:", id, "via",
                       TEMPDB["lockdowns"].get(student.student_id), "but grade posted from", by)
                 return
-            alreadyHaveData = student.student_id in DB["students"]
+            alreadyHaveData = student.student_id in DB.students
             if not wantOverride and alreadyHaveData:
                 resp.media = {
                     "failure": "Grade already exists. Use override:true to override."
@@ -189,12 +191,12 @@ class StudentRes(PublicRes):
                 }
                 resp.status = falcon.HTTP_BAD_REQUEST
                 return
-            DB["students"][student.student_id] = data
-            DB["grading_students"][student.student_id]["finished"] = True
+            DB.students[student.student_id] = data
+            DB.grading_students[student.student_id]["finished"] = True
             unlockStudent(student.student_id)
             resp.media = {}
         elif action == "skip":
-            DB["grading_students"][student.student_id]["skipped"] = True
+            DB.grading_students[student.student_id]["skipped"] = True
             print("Student", student.student_id, "is skipped")
             resp.media = {}
         else:
@@ -212,11 +214,11 @@ class StudentRes(PublicRes):
             }
             return
         if action == "grades":
-            DB["students"][student.student_id] = {}
-            DB["grading_students"][student.student_id]["finished"] = False
+            DB.students[student.student_id] = {}
+            DB.grading_students[student.student_id]["finished"] = False
             resp.media = {}
         elif action == "skip":
-            DB["grading_students"][student.student_id]["skipped"] = False
+            DB.grading_students[student.student_id]["skipped"] = False
             resp.media = {}
         else:
             resp.media = {
@@ -238,10 +240,10 @@ class StudentRes(PublicRes):
         elif action == "info":
             self.return_info(student, resp)
         elif action == "grades":
-            if student.student_id not in DB["students"]:
+            if student.student_id not in DB.students:
                 resp.staticdb = falcon.HTTP_NOT_FOUND
                 return
-            resp.media = DB["students"][student.student_id]
+            resp.media = DB.students[student.student_id]
 
         else:
             resp.media = {
@@ -258,7 +260,7 @@ class StudentRes(PublicRes):
     @staticmethod
     def return_info(student: Student, resp):
         retn = student.__dict__
-        retn["graded"] = DB["grading_students"][student.student_id]
+        retn["graded"] = DB.grading_students[student.student_id]
         retn["locked"] = student.student_id in TEMPDB["lockdowns"].keys()
         resp.media = retn
 

@@ -1,4 +1,4 @@
-from polyaserver.staticdb import DB, TEMPDB
+from polyaserver.db import DB, TEMPDB
 from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 import config
 from polyaserver.classes import Student
@@ -19,12 +19,12 @@ def valid_login(req):
         return False
     key = req.auth
     key_info = key.split(" ")
-    return key_info[0] == "Bearer" and key_info[1] in DB["sessions"]
+    return key_info[0] == "Bearer" and key_info[1] in DB.sessions
 
 
 def read_next_ungraded_student():
-    for _, id in enumerate(DB["grading_students"]):
-        if DB["grading_students"][id]["finished"] == False and DB["grading_students"][id]["skipped"] == False and (id not in TEMPDB["lockdowns"].keys()):
+    for _, id in enumerate(DB.grading_students):
+        if DB.grading_students[id]["finished"] == False and DB.grading_students[id]["skipped"] == False and (id not in TEMPDB["lockdowns"].keys()):
             return Student(id)
     return None
 
@@ -46,10 +46,10 @@ def get_tar_result(path):
 
 def readdir():
     for student_id in os.listdir(config.SUBMISSION_DIR):
-        DB["grading_students"][student_id] = {}
-        DB["grading_students"][student_id].update(DEFAULT_GRADING_STATUS)
+        DB.grading_students[student_id] = {}
+        DB.grading_students[student_id].update(DEFAULT_GRADING_STATUS)
     print("Searching dir {}, {} submissions found.".format(
-        config.SUBMISSION_DIR, len(DB["grading_students"])))
+        config.SUBMISSION_DIR, len(DB.grading_students)))
 
 
 def unlockStudent(sid):
