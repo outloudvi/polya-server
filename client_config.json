@@ -3,15 +3,19 @@
     "pid2": true,
     "env": [
       {
-        "name": "TEXT",
-        "value": "123"
+        "name": "example",
+        "value": "example"
       }
     ],
-    "work_path": "/data",
+    "work_path": null,
     "syscall": [
       {
         "name": "mmap",
         "permit": true
+      },
+      {
+        "name": "clone",
+        "permit": false
       }
     ],
     "capacity": [],
@@ -19,24 +23,12 @@
     "no_new_privileges": false,
     "no_network": false,
     "limit": null,
-    "extra_bind": [],
-    "extra_bind_ro": [
-      {
-        "source": "testinput.txt",
-        "target": "/tmp/testinput.txt"
-      }
-    ],
-    "extra_overlay": [],
-    "extra_overlay_ro": []
+    "shell": null
   },
   "firejail": {
-    "timeout": {
-      "hour": 0,
-      "minute": 0,
-      "second": 30
-    },
+    "timeout": null,
     "syscall": [],
-    "shell": "/usr/bin/bash",
+    "shell": null,
     "nice": null,
     "function": {
       "nou2f": false,
@@ -50,22 +42,19 @@
       "nonet": false
     },
     "mac": null,
+    "dns": null,
     "nodefault": false,
-    "limit": {
-      "mem_limit": 134217728,
-      "nofile_limit": null,
-      "filesize_limit": null,
-      "process_limit": null,
-      "sigpending_limit": null,
-      "cpu_nums": null
-    },
+    "allow_debuggers": false,
+    "limit": null,
     "capacity": [],
     "capacity_drop": [],
-    "with_profile": null
+    "with_profile": null,
+    "has_x": false,
+    "env": [],
+    "env_remove": [],
+    "whilelist": []
   },
-  "notification": "the project may invoke X11",
-  "max_grade": 100,
-  "stdin": null,
-  "capture_stdout": true,
-  "capture_stderr": true
+  "notification": "",
+  "max_grade": 0,
+  "stdin": null
 }
