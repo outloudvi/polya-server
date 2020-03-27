@@ -3,7 +3,7 @@ from polyaserver.staticdb import DB, TEMPDB
 from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 
 from polyaserver.classes import Student
-from polyaserver.hooks import Authorized
+from polyaserver.hooks import Authorized, FromLocal
 from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON, get_auth_key
 from polyaserver.db import savedata
 
@@ -12,6 +12,7 @@ from argon2.exceptions import VerifyMismatchError
 import falcon
 import os
 import uuid
+import json
 
 ph = PasswordHasher()
 
@@ -279,3 +280,22 @@ class RawRes(PublicRes):
             resp.media = DB
         elif action == "tempdb":
             resp.media = TEMPDB
+
+# ---- /admin ----
+@falcon.before(FromLocal)
+class AdminRes(PublicRes):
+    def on_post(self, req, resp, action):
+        if action == "unlock":
+            data = json.load(req.bounded_stream)
+            for i in data.get("students", []):
+                unlockStudent(i)
+                print("Unlocked student", i)
+            return
+        elif action == "unlock_all":
+            TEMPDB["lockdowns"] = {}
+            print("All students unlocked.")
+            return
+        resp.status = falcon.HTTP_BAD_REQUEST
+        resp.media = {
+            "failure": "Unknown action: {}".format(action)
+        }
