@@ -4,7 +4,7 @@ info:
   description: |
     This documentation describes the API endpoints of the server side of Project Polya, a
     tool helping teachers to grade programming assignments. See more at [our site](https://project-polya.github.io/wintersweet.html).
-  version: 1.1.0
+  version: 1.1.1
 servers:
   - url: http://127.1:8080
     description: Your testing server
@@ -98,7 +98,7 @@ paths:
                 $ref: '#/components/schemas/ClientConfig'
         '401':
           description: Unauthorized
-  /image.sfx:
+  /image.sfs:
     get:
       summary: Request the base image
       description: Gives the base image. Compressed over squashfs format.
