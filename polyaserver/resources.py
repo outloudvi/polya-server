@@ -43,9 +43,8 @@ class AuthRes(PublicRes):
 
         uuidid = str(uuid.uuid4())
         DB.sessions.append(uuidid)
-        print(DB)
-        print("Sess", DB.sessions)
         print("Authenticated:", uuidid)
+        print("Current authenticated users:", DB.sessions)
         resp.media = {
             "token": uuidid
         }
