@@ -23,7 +23,7 @@ class PublicRes:
 
 # ---- /register ----
 class AuthRes(PublicRes):
-    def on_get(self, req, resp):
+    def on_post(self, req, resp):
         if req.auth is None:
             resp.media = {
                 "failure": "Register token not found"
