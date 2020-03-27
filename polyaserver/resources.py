@@ -89,12 +89,12 @@ class InfoRes(PublicRes):
 
     on_get = on_post
 
-# --- /image.tar ----
+# --- /image.sfx ----
 @falcon.before(Authorized)
 class ImageRes(PublicRes):
     def on_post(self, req, resp):
         print("Fetched file")
-        resp.stream = open("./image.tar")
+        resp.stream = open("./image.sfx")
 
     on_get = on_post
 
