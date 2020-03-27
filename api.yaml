@@ -4,10 +4,19 @@ info:
   description: |
     This documentation describes the API endpoints of the server side of Project Polya, a
     tool helping teachers to grade programming assignments. See more at [our site](https://project-polya.github.io/wintersweet.html).
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: http://127.1:8080
     description: Your testing server
+tags:
+  - name: Session Management
+    description: Register and revoke sessions.
+  - name: Config
+    description: Fetch client configurations and assets.
+  - name: Student
+    description: Student status management.
+  - name: Admin
+    description: Admin management. Only accessible via localhost.
 paths:
   /register:
     post:
@@ -470,6 +479,42 @@ paths:
                     type: string
                 example:
                   failure: Student not found
+  /admin/unlock:
+    post:
+      tags:
+        - Admin
+      summary: Unlock multi students
+      requestBody:
+        required: true
+        description: Student list to unlock
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                students:
+                  type: array
+                  items:
+                    type: string
+              example:
+                students:
+                  - 118010101
+                  - 118010102
+      responses:
+        '200':
+          description: Students unlocked.
+        '401':
+          description: Unauthorized
+  /admin/unlock_all:
+    post:
+      tags:
+        - Admin
+      summary: Unlock all students
+      responses:
+        '200':
+          description: All students unlocked.
+        '401':
+          description: Unauthorized
 components:
   securitySchemes:
     bearerAuth:
