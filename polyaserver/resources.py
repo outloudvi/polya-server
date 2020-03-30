@@ -282,7 +282,7 @@ class RawRes(PublicRes):
         elif action == "tempdb":
             resp.media = TEMPDB
 
-# ---- /admin ----
+# ---- /admin/{action} ----
 @falcon.before(FromLocal)
 class AdminRes(PublicRes):
     def on_post(self, req, resp, action):
@@ -295,6 +295,20 @@ class AdminRes(PublicRes):
         elif action == "unlock_all":
             TEMPDB["lockdowns"] = {}
             print("All students unlocked.")
+            return
+        resp.status = falcon.HTTP_BAD_REQUEST
+        resp.media = {
+            "failure": "Unknown action: {}".format(action)
+        }
+
+    def on_get(self, req, resp, action):
+        if action == "export":
+            ret = ""
+            for sid in DB.students.keys():
+                ret += "{},{}\n".format(sid,
+                                        DB.students.get(sid, {}).get("graded", 0))
+            resp.body = ret
+            resp.content_type = "text/csv"
             return
         resp.status = falcon.HTTP_BAD_REQUEST
         resp.media = {

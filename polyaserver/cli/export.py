@@ -1,9 +1,7 @@
 import csv
 import json
 import argparse
-
-
-DBNAME = "db.json"
+from urllib.request import urlopen
 
 
 def getfirststr(arr):
@@ -13,25 +11,17 @@ def getfirststr(arr):
 def main():
     parser = argparse.ArgumentParser(
         description='Export the grades to CSV file.')
-    parser.add_argument('--db', '-d', nargs=1, type=str,
-                        default="db.json", help='Database file path')
     parser.add_argument('--output', '-o', nargs=1, type=str,
                         default="grades.csv", help='Output file path')
+    parser.add_argument('--server-port', '-p', nargs=1, type=int,
+                        default=8000, help='Port of the server')
 
     args = parser.parse_args()
 
-    try:
-        db = json.load(open(getfirststr(args.db)))
-    except Exception as e:
-        print("Error reading database:", e)
-        exit(1)
-    resultList = db.get("students", {})
+    result = urlopen(
+        "http://127.0.0.1:{}/admin/export".format(args.server_port)).read().decode()
     with open(getfirststr(args.output), 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile,
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for key in resultList:
-            score = resultList[key].get("graded")
-            writer.writerow([key, score or 0])
+        csvfile.write(result)
     print("Done")
 
 

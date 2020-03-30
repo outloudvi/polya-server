@@ -4,7 +4,7 @@ info:
   description: |
     This documentation describes the API endpoints of the server side of Project Polya, a
     tool helping teachers to grade programming assignments. See more at [our site](https://project-polya.github.io/wintersweet.html).
-  version: 1.1.1
+  version: "1.2.0"
 servers:
   - url: http://127.1:8080
     description: Your testing server
@@ -513,6 +513,24 @@ paths:
       responses:
         '200':
           description: All students unlocked.
+        '401':
+          description: Unauthorized
+  /admin/export:
+    get:
+      tags:
+        - Admin
+      summary: Export all students' grades
+      responses:
+        '200':
+          description: All students' grades.
+          content:
+            text/csv:
+              schema:
+                example: |
+                  118010101,100
+                  118010102,0
+                  
+              
         '401':
           description: Unauthorized
 components:
