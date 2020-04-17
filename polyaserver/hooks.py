@@ -18,3 +18,12 @@ def FromLocal(req, resp, resource, params):
     resp.media = {"reason": "This endpoint is only accessible from localhost."}
     raise HTTPUnauthorized(
         'Unauthorized', "This endpoint is only accessible from localhost.")
+
+
+def AuthorizedOrLocal(req, resp, resource, params):
+    if valid_login(req) or req.remote_addr == "127.0.0.1" or req.remote_addr == "::!":
+        return
+    resp.status = HTTP_UNAUTHORIZED
+    resp.media = {"reason": "This endpoint is only accessible for authenticated users or localhost."}
+    raise HTTPUnauthorized(
+        'Unauthorized', 'This endpoint is only accessible for authenticated users or localhost.')

@@ -3,7 +3,7 @@ from polyaserver.db import DB, TEMPDB
 from polyaserver.internal_const import DEFAULT_GRADING_STATUS
 
 from polyaserver.classes import Student
-from polyaserver.hooks import Authorized, FromLocal
+from polyaserver.hooks import Authorized, FromLocal, AuthorizedOrLocal
 from polyaserver.utils import get_tar_result, lockStudent, read_next_ungraded_student, unlockStudent, readJSON, get_auth_key
 from polyaserver.db import savedata
 
@@ -120,7 +120,7 @@ class NextRes(PublicRes):
     on_post = on_get
 
 # ---- /students ----
-@falcon.before(Authorized)
+@falcon.before(AuthorizedOrLocal)
 class StudentListRes(PublicRes):
     def on_get(self, req, resp):
         if req.get_param_as_bool("detail"):
@@ -309,6 +309,17 @@ class AdminRes(PublicRes):
                                         DB.students.get(sid, {}).get("graded", 0))
             resp.body = ret
             resp.content_type = "text/csv"
+            return
+        elif action == "report":
+            sid = req.get_param("id")
+            if sid is None:
+                resp.status = falcon.HTTP_BAD_REQUEST
+                resp.media = {
+                    "failure": "No student id found."
+                }
+                return
+            ret = json.dumps(DB.grading_students.get(sid, {}))
+            resp.body = ret
             return
         resp.status = falcon.HTTP_BAD_REQUEST
         resp.media = {
