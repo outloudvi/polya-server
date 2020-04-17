@@ -23,7 +23,7 @@ def main():
 
     args = parser.parse_args()
 
-    host = "http://127.0.0.1:{}".format(args.server_port[0])
+    host = "http://127.0.0.1:{}".format(getfirststr(args.server_port))
 
     studentIds = args.student or []
     if args.all:

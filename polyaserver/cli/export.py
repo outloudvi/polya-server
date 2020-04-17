@@ -19,7 +19,7 @@ def main():
     args = parser.parse_args()
 
     result = urlopen(
-        "http://127.0.0.1:{}/admin/export".format(args.server_port)).read().decode()
+        "http://127.0.0.1:{}/admin/export".format(getfirststr(args.server_port))).read().decode()
     with open(getfirststr(args.output), 'w', newline='') as csvfile:
         csvfile.write(result)
     print("Done")
